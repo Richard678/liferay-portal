@@ -298,9 +298,9 @@
 		<if>
 			<isset var="checkPageName" />
 			<then>
-				<execute function="Click" locator1="StagingPublishtolivenow#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
+				<execute function="Click" locator1="PagesConfiguration#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
 
-				<execute function="Click" locator1="StagingPublishtolivenow#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
+				<execute function="Click" locator1="PagesConfiguration#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
 
 				<for list="${checkPageName}" param="pageName">
 					<var name="key_pageName" value="${pageName}" />
@@ -395,9 +395,9 @@
 
 				<var name="key_uncheckContent" value="${uncheckSubContent}" />
 
-				<execute function="AssertClick" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK" value1="Change" />
+				<execute function="AssertClick" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK" value1="Change" />
 
-				<execute function="Uncheck" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_SUBCONTENT_CHECKBOX" />
+				<execute function="Uncheck" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT_SUBCONTENT_CHECKBOX" />
 
 				<execute function="AssertClick" locator1="Button#OK" value1="OK" />
 			</then>
@@ -414,12 +414,12 @@
 
 				<var name="key_uncheckContent" value="${contentName}" />
 
-				<execute function="AssertClick" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK" value1="Change" />
+				<execute function="AssertClick" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK" value1="Change" />
 
 				<var name="key_subContent" value="${subContent}" />
 				<var name="key_subSubContent" value="${uncheckSubSubContent}" />
 
-				<execute function="Uncheck" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_SUB_SUBCONTENT_CHECKBOX" />
+				<execute function="Uncheck" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT_SUB_SUBCONTENT_CHECKBOX" />
 
 				<execute function="AssertClick" locator1="Button#OK" value1="OK" />
 			</then>
@@ -471,6 +471,26 @@
 		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
 
 		<execute function="Click" locator1="MenuItem#DELETE" />
+	</command>
+
+	<command name="deleteSitePagesVariationPG">
+		<execute macro="Staging#navigateToSitePageVariation" />
+
+		<var name="key_rowEntry" value="${sitePagesVariationName}" />
+
+		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
+
+		<execute function="ClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
+
+		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
+
+		<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+
+		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+
+		<execute function="SelectFrame" value1="relative=top" />
+
+		<execute function="Click" locator1="Icon#CLOSE" />
 	</command>
 
 	<command name="editPublishTemplate">
@@ -605,6 +625,10 @@
 		<execute function="Confirm" value1="Are you sure you want to merge changes from ${sitePagesVariationMergeName}?" />
 
 		<execute macro="Staging#viewVariationSuccessMessage" />
+
+		<execute function="SelectFrame" value1="relative=top" />
+
+		<execute function="Click" locator1="Icon#CLOSE" />
 	</command>
 
 	<command name="modifyVariation">

@@ -215,7 +215,7 @@ if (powwowMeeting != null) {
 		</aui:select>
 
 		<div class="provider-branding-features">
-			<i class="icon-info-sign" id="<portlet:namespace/>providerBrandingFeaturesIcon"></i>
+			<i class="icon-info-sign" id="<portlet:namespace />providerBrandingFeaturesIcon"></i>
 		</div>
 	</div>
 
@@ -246,7 +246,7 @@ if (powwowMeeting != null) {
 	<h3><liferay-ui:message key="participants" /></h3>
 
 	<aui:fieldset cssClass="participants" id="participants">
-		<aui:input name="powwowParticipantData" type="hidden" />
+		<aui:input name="participantsJSON" type="hidden" />
 
 		<div class="row-fields">
 			<aui:input autocomplete="off" cssClass="add-participant" inlineField="<%= true %>" label="" name="powwowParticipantInput" placeholder="add-participant-by-name-or-email-address" type="text" />
@@ -289,7 +289,7 @@ if (powwowMeeting != null) {
 			html: true,
 			opacity: 1,
 			position: 'right',
-			trigger: '#<portlet:namespace/>providerBrandingFeaturesIcon',
+			trigger: '#<portlet:namespace />providerBrandingFeaturesIcon',
 			visible: false,
 			zIndex: 10000
 		}
@@ -319,7 +319,7 @@ if (powwowMeeting != null) {
 		%>
 
 			if (providerType == '<%= providerType %>') {
-				A.one('#<portlet:namespace/>providerBrandingFeaturesIcon').attr('data-title', '<%= sb %>');
+				A.one('#<portlet:namespace />providerBrandingFeaturesIcon').attr('data-title', '<%= sb %>');
 
 				<%
 				if (PowwowServiceProviderUtil.isSupportsOptionAutoStartVideo(providerType)) {
@@ -349,12 +349,12 @@ if (powwowMeeting != null) {
 
 	}
 
-	var selection = A.one('#<portlet:namespace/>providerType');
+	var selection = A.one('#<portlet:namespace />providerType');
 
 	selection.on(
 		'change',
 		function() {
-			var providerTypeSelected = A.one('#<portlet:namespace/>providerType').val();
+			var providerTypeSelected = A.one('#<portlet:namespace />providerType').val();
 
 			<portlet:namespace />loadFeatures(providerTypeSelected);
 		}
@@ -375,9 +375,9 @@ if (powwowMeeting != null) {
 
 	new A.FormValidator(
 		{
-			boundingBox: '#<portlet:namespace/>fm',
+			boundingBox: '#<portlet:namespace />fm',
 			rules: {
-				'<portlet:namespace/>password': {
+				'<portlet:namespace />password': {
 					alphanum: true,
 					rangeLength: [1, 10]
 				}
@@ -390,7 +390,7 @@ if (powwowMeeting != null) {
 			containerId: 'meetingEventDate',
 			endDatePickerName: 'endDate',
 			endTimePickerName: 'endTime',
-			namespace: '<portlet:namespace/>',
+			namespace: '<portlet:namespace />',
 			startDatePickerName: 'startDate',
 			startTimePickerName: 'startTime',
 			submitButtonId: 'submit'
@@ -406,9 +406,9 @@ if (powwowMeeting != null) {
 			creatorUserId: <%= user.getUserId() %>,
 			formName: 'fm',
 			meetingId: <%= (powwowMeeting != null) ? powwowMeeting.getPowwowMeetingId() : -1 %>,
-			namespace: '<portlet:namespace/>',
-			participantDataField: 'powwowParticipantData',
-			participantInvitedSelector: '#<portlet:namespace/>powwowParticipantList .participant-invited',
+			namespace: '<portlet:namespace />',
+			participantDataField: 'participantsJSON',
+			participantInvitedSelector: '#<portlet:namespace />powwowParticipantList .participant-invited',
 			participantKeywords: 'powwowParticipantInput',
 			participantList: 'powwowParticipantList',
 			participantName: 'powwowParticipantName',
@@ -419,7 +419,7 @@ if (powwowMeeting != null) {
 			prefixParticipantParticipantUserId: 'powwowParticipantParticipantUserId',
 			prefixParticipantType: 'powwowParticipantType',
 			redirect: '<%= HtmlUtil.escape(redirect) %>',
-			rowFieldsSelector: '#<portlet:namespace/>participants .row-fields'
+			rowFieldsSelector: '#<portlet:namespace />participants .row-fields'
 		}
 	);
 

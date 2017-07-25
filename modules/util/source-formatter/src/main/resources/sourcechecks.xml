@@ -23,7 +23,20 @@
 		<check name="BNDIncludeResourceCheck" />
 		<check name="BNDWebContextPathCheck" />
 	</source-processor>
+	<source-processor name="CQLSourceProcessor">
+		<check name="CQLKeywordCheck" />
+		<check name="WhitespaceCheck">
+			<property name="allowLeadingSpaces" value="true" />
+		</check>
+	</source-processor>
 	<source-processor name="CSSSourceProcessor">
+		<check name="CSSCommentsCheck" />
+		<check name="CSSEmptyLinesCheck" />
+		<check name="CSSHexColorsCheck" />
+		<check name="CSSPropertiesOrderCheck" />
+		<check name="CSSWhitespaceCheck" />
+	</source-processor>
+	<source-processor name="DockerfileSourceProcessor">
 		<check name="WhitespaceCheck" />
 	</source-processor>
 	<source-processor name="FTLSourceProcessor">
@@ -57,6 +70,7 @@
 		<check name="JavaAssertEqualsCheck" />
 		<check name="JavaBooleanStatementCheck" />
 		<check name="JavaBooleanUsageCheck" />
+		<check name="JavaCollatorUtilCheck" />
 		<check name="JavaCombineLinesCheck" />
 		<check name="JavaConfigurationAdminCheck" />
 		<check name="JavaConstructorParameterOrder" />
@@ -116,7 +130,7 @@
 		<check name="JavaModuleServiceReferenceCheck" />
 		<check name="JavaModuleTestCheck" />
 		<check name="JavaOSGiReferenceCheck">
-			<property name="serviceReferenceUtilClassNames" value="com.liferay.exportimport.kernel.staging.StagingUtil,com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil,com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplayFactoryUtil,com.liferay.portal.kernel.captcha.CaptchaUtil,com.liferay.portal.kernel.comment.CommentManagerUtil,com.liferay.portal.kernel.util.HttpUtil,com.liferay.portal.kernel.util.PortalUtil" />
+			<property name="serviceReferenceUtilClassNames" value="     com.liferay.exportimport.kernel.lar.ExportImportHelperUtil,     com.liferay.exportimport.kernel.lar.ExportImportProcessCallbackRegistryUtil,     com.liferay.exportimport.kernel.lar.PortletDataContextFactoryUtil,     com.liferay.exportimport.kernel.lar.PortletDataHandlerStatusMessageSenderUtil,     com.liferay.exportimport.kernel.staging.StagingUtil,     com.liferay.portal.kernel.backgroundtask.BackgroundTaskManagerUtil,     com.liferay.portal.kernel.backgroundtask.display.BackgroundTaskDisplayFactoryUtil,     com.liferay.portal.kernel.captcha.CaptchaUtil,     com.liferay.portal.kernel.comment.CommentManagerUtil,     com.liferay.portal.kernel.util.HttpUtil,     com.liferay.portal.kernel.util.PortalUtil" />
 		</check>
 
 		<!-- Plugins checks -->

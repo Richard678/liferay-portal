@@ -37,8 +37,9 @@
 		</if>
 	</tear-down>
 
-	<command name="AddAndViewStructureAndTemplateWithPermissions" priority="4">
-		<property name="testray.component.names" value="Roles,Permissions,Web Content Administration" />
+	<command name="AddAndViewStructureAndTemplateWithPermissions" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Permissions,Roles,Training,Web Content Administration" />
 
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
@@ -266,10 +267,11 @@
 		<execute function="AssertTextNotPresent" value1="WC Template Name" />
 	</command>
 
-	<command name="AddAudioViaWebContent" priority="4">
+	<command name="AddAudioViaWebContent" priority="5">
 		<property name="custom.properties" value="editor.wysiwyg.portal-impl.portlet.ddm.text_html.ftl=ckeditor" />
+		<property name="portal.acceptance" value="pending" />
 		<property name="test.name.skip.portal.instance" value="WebcontentUsecase#AddAudioViaWebContent" />
-		<property name="testray.component.names" value="Web Content Administration" />
+		<property name="testray.component.names" value="Training,Web Content Administration" />
 
 		<execute macro="ProductMenu#gotoControlPanelConfiguration">
 			<var name="portlet" value="Server Administration" />
@@ -538,8 +540,9 @@
 		<execute function="AssertElementPresent" locator1="Button#CONVERT" />
 	</command>
 
-	<command name="AddExistingPageAsDisplayPageInSiteCP" priority="3">
-		<property name="testray.component.names" value="Web Content Administration" />
+	<command name="AddExistingPageAsDisplayPageInSiteCP" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training,Web Content Administration" />
 
 		<execute macro="ProductMenu#gotoControlPanelSites">
 			<var name="portlet" value="Sites" />
@@ -622,8 +625,9 @@
 		</execute>
 	</command>
 
-	<command name="AddImageToWebContentViaItemSelector" priority="4">
-		<property name="testray.component.names" value="Web Content Administration" />
+	<command name="AddImageToWebContentViaItemSelector" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training,Web Content Administration" />
 
 		<execute macro="Page#add">
 			<var name="pageName" value="Web Content Image Page" />
@@ -844,6 +848,47 @@
 		<execute function="AssertTextNotPresent" value1="Web Content Display" />
 
 		<execute function="AssertTextNotPresent" value1="WC WebContent Content" />
+	</command>
+
+	<command name="AddWebContentViaSourceEditor" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training,Web Content Administration" />
+
+		<execute macro="Page#add">
+			<var name="pageName" value="Test Page Name" />
+		</execute>
+
+		<execute macro="Portlet#addPG">
+			<var name="portletName" value="Web Content Display" />
+		</execute>
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Test Page Name" />
+		</execute>
+
+		<execute macro="WebContentNavigator#gotoAddPGViaWCD" />
+
+		<execute macro="WebContent#addCP">
+			<var name="webContentTitle" value="Basic S.P.A.C.E. Banner" />
+		</execute>
+
+		<execute macro="AlloyEditor#addSourceContent">
+			<var name="content"><![CDATA[
+<h2 class="text-center">Space Program Academy of Continuing Education</h2>
+
+<p class="text-center">Dare to Dream out of this world</p>
+]]></var>
+		</execute>
+
+		<execute macro="Button#clickPublish" />
+
+		<execute macro="Navigator#gotoPage">
+			<var name="pageName" value="Test Page Name" />
+		</execute>
+
+		<execute macro="WebContent#viewPGViaWCD">
+			<var name="webContentContent" value="Space Program Academy of Continuing Education Dare to Dream out of this world" />
+		</execute>
 	</command>
 
 	<command name="AddWebContentViaWCDWithGlobalStructureAndLocalTemplate" priority="4">
@@ -1266,8 +1311,9 @@
 		</execute>
 	</command>
 
-	<command name="EditContentWithTitleAndAllFieldsNull" priority="4">
-		<property name="testray.component.names" value="Web Content Administration" />
+	<command name="EditContentWithTitleAndAllFieldsNull" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training,Web Content Administration" />
 
 		<execute macro="Navigator#openURL" />
 

@@ -14,6 +14,12 @@
 
 package com.liferay.poshi.runner.elements;
 
+import com.liferay.poshi.runner.util.RegexUtil;
+import com.liferay.poshi.runner.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dom4j.Element;
 
 /**
@@ -39,64 +45,48 @@ public class CommandElement extends PoshiElement {
 
 	@Override
 	public void parseReadableSyntax(String readableSyntax) {
-		StringBuilder sb = new StringBuilder();
+		for (String readableBlock : getReadableBlocks(readableSyntax)) {
+			if (readableBlock.startsWith("setUp")) {
+				System.out.println(readableBlock);
+			}
 
-		for (String line : readableSyntax.split("\n")) {
-			line = line.trim();
+			if (readableBlock.endsWith("}") || readableBlock.endsWith(";") ||
+				readableBlock.startsWith("@description")) {
 
-			String endKey = " {";
-
-			if (line.endsWith(endKey)) {
-				String startKey = "test";
-
-				if (line.startsWith(startKey)) {
-					int start = startKey.length();
-					int end = line.length() - endKey.length();
-
-					String name = line.substring(start, end);
-
-					addAttribute("name", name);
-				}
+				addElementFromReadableSyntax(readableBlock);
 
 				continue;
 			}
 
-			if (line.equals(");")) {
-				sb.append(line);
+			if (readableBlock.endsWith("{")) {
+				String name = RegexUtil.getGroup(
+					readableBlock, "test([\\w]*)", 1);
 
-				addElementFromReadableSyntax(sb.toString());
-
-				sb.setLength(0);
-
-				continue;
-			}
-
-			if (line.endsWith(";")) {
-				addElementFromReadableSyntax(line);
+				addAttribute("name", name);
 
 				continue;
 			}
 
-			if (line.equals("}")) {
-				continue;
-			}
-
-			if (line.startsWith("@")) {
-				String name = getNameFromAssignment(line);
-				String value = getValueFromAssignment(line);
+			if (readableBlock.startsWith("@")) {
+				String name = getNameFromAssignment(readableBlock);
+				String value = getQuotedContent(readableBlock);
 
 				addAttribute(name, value);
-
-				continue;
 			}
-
-			sb.append(line);
 		}
 	}
 
 	@Override
 	public String toReadableSyntax() {
 		StringBuilder sb = new StringBuilder();
+
+		for (PoshiElement poshiElement :
+				toPoshiElements(elements("description"))) {
+
+			sb.append("\n\t@description = \"");
+			sb.append(poshiElement.attributeValue("message"));
+			sb.append("\"");
+		}
 
 		for (PoshiElementAttribute poshiElementAttribute :
 				toPoshiElementAttributes(attributeList())) {
@@ -111,9 +101,54 @@ public class CommandElement extends PoshiElement {
 			sb.append(poshiElementAttribute.toReadableSyntax());
 		}
 
-		String readableSyntax = super.toReadableSyntax();
+		List<String> readableBlocks = new ArrayList<>();
 
-		sb.append(createReadableBlock(readableSyntax));
+		for (PoshiElement poshiElement : toPoshiElements(elements())) {
+			readableBlocks.add(poshiElement.toReadableSyntax());
+		}
+
+		sb.append(createReadableBlock(readableBlocks));
+
+		return sb.toString();
+	}
+
+	protected String createReadableBlock(List<String> items) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("\n");
+
+		String pad = getPad();
+
+		sb.append(pad);
+
+		sb.append(getBlockName());
+		sb.append(" {");
+
+		for (int i = 0; i < items.size(); i++) {
+			String item = items.get(i);
+
+			if (i == 0) {
+				if (item.startsWith("\n\n")) {
+					item = item.replaceFirst("\n\n", "\n");
+				}
+			}
+
+			if (isCDATAVar(item)) {
+				item = item.replaceFirst("var ", pad + "var ");
+
+				sb.append(item);
+
+				continue;
+			}
+
+			item = item.replaceAll("\n", "\n" + pad);
+
+			sb.append(item.replaceAll("\n\t\n", "\n\n"));
+		}
+
+		sb.append("\n");
+		sb.append(pad);
+		sb.append("}");
 
 		return sb.toString();
 	}
@@ -123,8 +158,66 @@ public class CommandElement extends PoshiElement {
 		return getReadableCommandTitle();
 	}
 
+	protected List<String> getReadableBlocks(String readableSyntax) {
+		StringBuilder sb = new StringBuilder();
+
+		List<String> readableBlocks = new ArrayList<>();
+
+		for (String line : readableSyntax.split("\n")) {
+			line = line.trim();
+
+			if (line.length() == 0) {
+				sb.append("\n");
+
+				continue;
+			}
+
+			if (line.startsWith("setUp") || line.startsWith("tearDown")) {
+				continue;
+			}
+
+			if ((line.endsWith(" {") && line.startsWith("test")) ||
+				line.startsWith("@")) {
+
+				readableBlocks.add(line);
+
+				continue;
+			}
+
+			if (!line.startsWith("else {")) {
+				String readableBlock = sb.toString();
+
+				readableBlock = readableBlock.trim();
+
+				if (isValidReadableBlock(readableBlock)) {
+					readableBlocks.add(readableBlock);
+
+					sb.setLength(0);
+				}
+			}
+
+			sb.append(line);
+			sb.append("\n");
+		}
+
+		return readableBlocks;
+	}
+
 	protected String getReadableCommandTitle() {
 		return "test" + attributeValue("name");
+	}
+
+	protected boolean isCDATAVar(String readableSyntax) {
+		String trimmedReadableSyntax = readableSyntax.trim();
+
+		if (!readableSyntax.contains("return(\n") &&
+			(StringUtil.count(readableSyntax, "\n") > 1) &&
+			trimmedReadableSyntax.startsWith("var ")) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 }
