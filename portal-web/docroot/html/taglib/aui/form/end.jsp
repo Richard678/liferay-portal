@@ -16,6 +16,10 @@
 
 <%@ include file="/html/taglib/aui/form/init.jsp" %>
 
+<%
+String autoFocusTagId = GetterUtil.getString(request.getAttribute("aui:input:autoFocusTagId"));
+%>
+
 	<c:if test="<%= (checkboxNames != null) && !checkboxNames.isEmpty() %>">
 		<aui:input name="checkboxNames" type="hidden" value="<%= StringUtil.merge(checkboxNames) %>" />
 	</c:if>
@@ -27,7 +31,6 @@
 
 <%
 String fullName = namespace + HtmlUtil.escapeJS(name);
-String autoFocusTagId = GetterUtil.getString(request.getAttribute("autoFocusTagId"));
 %>
 
 <aui:script use="liferay-form">
@@ -85,6 +88,7 @@ String autoFocusTagId = GetterUtil.getString(request.getAttribute("autoFocusTagI
 
 	<c:if test="<%= Validator.isNotNull(onSubmit) %>">
 		A.all('#<%= fullName %> .input-container').removeAttribute('disabled');
+
 		<c:if test="<%= Validator.isNotNull(autoFocusTagId) %>">
 			Liferay.Util.focusFormField('#<%= autoFocusTagId %>');
 		</c:if>
