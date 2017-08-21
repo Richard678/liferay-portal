@@ -106,6 +106,7 @@ import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -490,13 +491,49 @@ public class LayoutStagedModelDataHandler
 			if (existingLayout == null) {
 				existingLayout = _layoutLocalService.fetchLayoutByFriendlyURL(
 					groupId, privateLayout, friendlyURL);
+
+				List<String> importedFriendlyURL =
+					portletDataContext.getImportedFriendlyURL();
+
+				boolean hasExistingLayout = true;
+
+				if (Validator.isNotNull(existingLayout)) {
+					if (Validator.isNotNull(
+							existingLayout.getSourcePrototypeLayoutUuid())) {
+
+						hasExistingLayout = false;
+					}
+					else if (Validator.isNotNull(importedFriendlyURL)) {
+						if (importedFriendlyURL.contains(
+								existingLayout.getFriendlyURL())) {
+
+							hasExistingLayout = false;
+						}
+					}
+				}
+
+				if (!hasExistingLayout) {
+					existingLayout = null;
+				}
 			}
 
 			if (existingLayout == null) {
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
 
-				friendlyURL = getFriendlyURL(friendlyURL, layoutId);
+				friendlyURL = getFriendlyURL(
+					groupId, privateLayout, friendlyURL, layoutId - 1);
+
+				List<String> importedFriendlyURL =
+					portletDataContext.getImportedFriendlyURL();
+
+				if (Validator.isNull(importedFriendlyURL)) {
+					importedFriendlyURL = new ArrayList();
+				}
+
+				importedFriendlyURL.add(friendlyURL);
+
+				portletDataContext.setImportedFriendlyURL(importedFriendlyURL);
 			}
 		}
 
@@ -1048,6 +1085,26 @@ public class LayoutStagedModelDataHandler
 		typeSettings.setProperty(
 			"url",
 			url.substring(0, x) + group.getFriendlyURL() + url.substring(y));
+	}
+
+	protected String getFriendlyURL(
+		long groupId, Boolean privateLayout, String friendlyURL,
+		long layoutId) {
+
+		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
+			groupId, privateLayout, friendlyURL);
+
+		if (Validator.isNull(layout)) {
+			return friendlyURL;
+		}
+		else {
+			layoutId = layoutId + 1;
+
+			friendlyURL = getFriendlyURL(friendlyURL, layoutId);
+
+			return getFriendlyURL(
+				groupId, privateLayout, friendlyURL, layoutId);
+		}
 	}
 
 	protected String getFriendlyURL(String friendlyURL, long layoutId) {
