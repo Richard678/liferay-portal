@@ -485,6 +485,15 @@ public class LayoutStagedModelDataHandler
 			// The default behavior of import mode is
 			// PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE_MERGE_BY_LAYOUT_UUID
 
+			List<String> importedFriendlyURL = portletDataContext.getImportedFriendlyURL();
+
+			if (importedFriendlyURL == null) {
+				importedFriendlyURL = new ArrayList();
+
+				portletDataContext.setImportedFriendlyURL(importedFriendlyURL);
+			}
+
+
 			existingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
 				layout.getUuid(), groupId, privateLayout);
 
@@ -495,25 +504,18 @@ public class LayoutStagedModelDataHandler
 				List<String> importedFriendlyURL =
 					portletDataContext.getImportedFriendlyURL();
 
-				boolean hasExistingLayout = true;
-
-				if (Validator.isNotNull(existingLayout)) {
+				if (existingLayout != null) {
 					if (Validator.isNotNull(
 							existingLayout.getSourcePrototypeLayoutUuid())) {
 
-						hasExistingLayout = false;
+						existingLayout = null;
 					}
-					else if (Validator.isNotNull(importedFriendlyURL)) {
-						if (importedFriendlyURL.contains(
-								existingLayout.getFriendlyURL())) {
 
-							hasExistingLayout = false;
-						}
+					if (importedFriendlyURL.contains(
+							existingLayout.getFriendlyURL())) {
+
+						existingLayout = null;
 					}
-				}
-
-				if (!hasExistingLayout) {
-					existingLayout = null;
 				}
 			}
 
@@ -522,14 +524,7 @@ public class LayoutStagedModelDataHandler
 					groupId, privateLayout);
 
 				friendlyURL = getFriendlyURL(
-					groupId, privateLayout, friendlyURL, layoutId - 1);
-
-				List<String> importedFriendlyURL =
-					portletDataContext.getImportedFriendlyURL();
-
-				if (Validator.isNull(importedFriendlyURL)) {
-					importedFriendlyURL = new ArrayList();
-				}
+					groupId, privateLayout, friendlyURL, layoutId);
 
 				importedFriendlyURL.add(friendlyURL);
 
@@ -1088,7 +1083,7 @@ public class LayoutStagedModelDataHandler
 	}
 
 	protected String getFriendlyURL(
-		long groupId, Boolean privateLayout, String friendlyURL,
+		long groupId, boolean privateLayout, String friendlyURL,
 		long layoutId) {
 
 		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
@@ -1098,12 +1093,10 @@ public class LayoutStagedModelDataHandler
 			return friendlyURL;
 		}
 		else {
-			layoutId = layoutId + 1;
-
 			friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 
 			return getFriendlyURL(
-				groupId, privateLayout, friendlyURL, layoutId);
+				groupId, privateLayout, friendlyURL, layoutId + 1);
 		}
 	}
 
