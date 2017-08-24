@@ -304,6 +304,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
+	public boolean addImportedFriendlyURL(String importedFriendlyURL) {
+		return _importedFriendlyURLs.add(importedFriendlyURL);
+	}
+
+	@Override
 	public void addLocks(Class<?> clazz, String key) throws PortalException {
 		if (!_locksMap.containsKey(getPrimaryKeyString(clazz, key)) &&
 			_lockManager.isLocked(clazz.getName(), key)) {
@@ -1950,11 +1955,6 @@ public class PortletDataContextImpl implements PortletDataContext {
 	@Override
 	public void setImportDataRootElement(Element importDataRootElement) {
 		_importDataRootElement = importDataRootElement;
-	}
-
-	@Override
-	public void setImportedFriendlyURLs(Set<String> importedFriendlyURLs) {
-		_importedFriendlyURLs = importedFriendlyURLs;
 	}
 
 	@Override

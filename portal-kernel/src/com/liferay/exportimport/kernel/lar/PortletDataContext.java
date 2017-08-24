@@ -129,6 +129,8 @@ public interface PortletDataContext extends Serializable {
 			Element element, String path, ClassedModel classedModel)
 		throws PortalException;
 
+	public boolean addImportedFriendlyURL(String importedFriendlyURL);
+
 	public void addLocks(Class<?> clazz, String key) throws PortalException;
 
 	public void addLocks(String className, String key, Lock lock);
@@ -645,8 +647,6 @@ public interface PortletDataContext extends Serializable {
 	public void setGroupId(long groupId);
 
 	public void setImportDataRootElement(Element importDataRootElement);
-
-	public void setImportedFriendlyURLs(Set<String> importedFriendlyURL);
 
 	public void setLayoutIds(long[] layoutIds);
 

@@ -484,9 +484,6 @@ public class LayoutStagedModelDataHandler
 			// The default behavior of import mode is
 			// PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE_MERGE_BY_LAYOUT_UUID
 
-			Set<String> importedFriendlyURLs =
-				portletDataContext.getImportedFriendlyURLs();
-
 			existingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
 				layout.getUuid(), groupId, privateLayout);
 
@@ -494,16 +491,21 @@ public class LayoutStagedModelDataHandler
 				existingLayout = _layoutLocalService.fetchLayoutByFriendlyURL(
 					groupId, privateLayout, friendlyURL);
 
-				if (Validator.isNotNull(existingLayout)) {
+				if (existingLayout != null) {
 					if (Validator.isNotNull(
 							existingLayout.getSourcePrototypeLayoutUuid())) {
 
 						existingLayout = null;
 					}
-					else if (importedFriendlyURLs.contains(
+					else {
+						Set<String> importedFriendlyURLs =
+							portletDataContext.getImportedFriendlyURLs();
+
+						if (importedFriendlyURLs.contains(
 								existingLayout.getFriendlyURL())) {
 
-						existingLayout = null;
+							existingLayout = null;
+						}
 					}
 				}
 			}
@@ -515,7 +517,7 @@ public class LayoutStagedModelDataHandler
 				friendlyURL = findAvailableFriendlyUrl(
 					groupId, privateLayout, friendlyURL, layoutId);
 
-				importedFriendlyURLs.add(friendlyURL);
+				portletDataContext.addImportedFriendlyURL(friendlyURL);
 			}
 		}
 
@@ -1020,15 +1022,14 @@ public class LayoutStagedModelDataHandler
 		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
 			groupId, privateLayout, friendlyURL);
 
-		if (Validator.isNull(layout)) {
+		if (layout == null) {
 			return friendlyURL;
 		}
-		else {
-			friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 
-			return findAvailableFriendlyUrl(
-				groupId, privateLayout, friendlyURL, layoutId + 1);
-		}
+		friendlyURL = getFriendlyURL(friendlyURL, layoutId);
+
+		return findAvailableFriendlyUrl(
+			groupId, privateLayout, friendlyURL, layoutId + 1);
 	}
 
 	protected void fixExportTypeSettings(Layout layout) throws Exception {
