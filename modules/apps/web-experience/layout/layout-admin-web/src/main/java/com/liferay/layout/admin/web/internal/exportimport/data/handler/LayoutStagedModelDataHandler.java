@@ -514,7 +514,7 @@ public class LayoutStagedModelDataHandler
 				layoutId = _layoutLocalService.getNextLayoutId(
 					groupId, privateLayout);
 
-				friendlyURL = findAvailableFriendlyUrl(
+				friendlyURL = findAvailableFriendlyURL(
 					groupId, privateLayout, friendlyURL, layoutId);
 
 				portletDataContext.addImportedFriendlyURL(friendlyURL);
@@ -1015,7 +1015,7 @@ public class LayoutStagedModelDataHandler
 		}
 	}
 
-	protected String findAvailableFriendlyUrl(
+	protected String findAvailableFriendlyURL(
 		long groupId, boolean privateLayout, String friendlyURL,
 		long layoutId) {
 
@@ -1028,7 +1028,7 @@ public class LayoutStagedModelDataHandler
 
 		friendlyURL = getFriendlyURL(friendlyURL, layoutId);
 
-		return findAvailableFriendlyUrl(
+		return findAvailableFriendlyURL(
 			groupId, privateLayout, friendlyURL, layoutId + 1);
 	}
 
