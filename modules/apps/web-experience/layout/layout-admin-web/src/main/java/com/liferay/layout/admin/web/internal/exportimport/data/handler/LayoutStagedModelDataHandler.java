@@ -484,7 +484,7 @@ public class LayoutStagedModelDataHandler
 			// The default behavior of import mode is
 			// PortletDataHandlerKeys.LAYOUTS_IMPORT_MODE_MERGE_BY_LAYOUT_UUID
 
-			List<String> importedFriendlyURLs =
+			Set<String> importedFriendlyURLs =
 				portletDataContext.getImportedFriendlyURLs();
 
 			existingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(

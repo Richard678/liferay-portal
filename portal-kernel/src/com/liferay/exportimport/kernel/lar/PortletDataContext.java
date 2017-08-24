@@ -340,7 +340,7 @@ public interface PortletDataContext extends Serializable {
 
 	public Element getImportDataStagedModelElement(StagedModel stagedModel);
 
-	public List<String> getImportedFriendlyURLs();
+	public Set<String> getImportedFriendlyURLs();
 
 	public long[] getLayoutIds();
 
@@ -646,7 +646,7 @@ public interface PortletDataContext extends Serializable {
 
 	public void setImportDataRootElement(Element importDataRootElement);
 
-	public void setImportedFriendlyURLs(List<String> importedFriendlyURL);
+	public void setImportedFriendlyURLs(Set<String> importedFriendlyURL);
 
 	public void setLayoutIds(long[] layoutIds);
 

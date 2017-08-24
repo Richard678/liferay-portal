@@ -988,7 +988,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
-	public List<String> getImportedFriendlyURLs() {
+	public Set<String> getImportedFriendlyURLs() {
 		return _importedFriendlyURLs;
 	}
 
@@ -1953,7 +1953,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
-	public void setImportedFriendlyURLs(List<String> importedFriendlyURLs) {
+	public void setImportedFriendlyURLs(Set<String> importedFriendlyURLs) {
 		_importedFriendlyURLs = importedFriendlyURLs;
 	}
 
@@ -2840,7 +2840,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private String _exportImportProcessId;
 	private long _groupId;
 	private transient Element _importDataRootElement;
-	private List<String> _importedFriendlyURLs = new ArrayList<>();
+	private Set<String> _importedFriendlyURLs = new HashSet<>();
 	private transient long[] _layoutIds;
 	private String _layoutSetPrototypeUuid;
 	private final transient LockManager _lockManager;
