@@ -2840,7 +2840,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private String _exportImportProcessId;
 	private long _groupId;
 	private transient Element _importDataRootElement;
-	private List<String> _importedFriendlyURLs;
+	private List<String> _importedFriendlyURLs = new ArrayList<>();
 	private transient long[] _layoutIds;
 	private String _layoutSetPrototypeUuid;
 	private final transient LockManager _lockManager;

@@ -106,7 +106,6 @@ import com.liferay.sites.kernel.util.SitesUtil;
 
 import java.io.IOException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -488,13 +487,6 @@ public class LayoutStagedModelDataHandler
 			List<String> importedFriendlyURLs =
 				portletDataContext.getImportedFriendlyURLs();
 
-			if (importedFriendlyURLs == null) {
-				importedFriendlyURLs = new ArrayList();
-
-				portletDataContext.setImportedFriendlyURLs(
-					importedFriendlyURLs);
-			}
-
 			existingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
 				layout.getUuid(), groupId, privateLayout);
 
@@ -508,12 +500,10 @@ public class LayoutStagedModelDataHandler
 
 						existingLayout = null;
 					}
-					else if (Validator.isNotNull(importedFriendlyURLs)) {
-						if (importedFriendlyURLs.contains(
+					else if (importedFriendlyURLs.contains(
 								existingLayout.getFriendlyURL())) {
 
-							existingLayout = null;
-						}
+						existingLayout = null;
 					}
 				}
 			}
