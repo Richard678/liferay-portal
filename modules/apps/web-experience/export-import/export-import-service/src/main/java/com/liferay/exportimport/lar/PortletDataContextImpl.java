@@ -304,6 +304,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 	}
 
 	@Override
+	public boolean addImportedFriendlyURL(String importedFriendlyURL) {
+		return _importedFriendlyURLs.add(importedFriendlyURL);
+	}
+
+	@Override
 	public void addLocks(Class<?> clazz, String key) throws PortalException {
 		if (!_locksMap.containsKey(getPrimaryKeyString(clazz, key)) &&
 			_lockManager.isLocked(clazz.getName(), key)) {
@@ -985,6 +990,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 		return getImportDataElement(
 			ExportImportClassedModelUtil.getClassSimpleName(stagedModel),
 			"path", path);
+	}
+
+	@Override
+	public Set<String> getImportedFriendlyURLs() {
+		return _importedFriendlyURLs;
 	}
 
 	@Override
@@ -2830,6 +2840,7 @@ public class PortletDataContextImpl implements PortletDataContext {
 	private String _exportImportProcessId;
 	private long _groupId;
 	private transient Element _importDataRootElement;
+	private Set<String> _importedFriendlyURLs = new HashSet<>();
 	private transient long[] _layoutIds;
 	private String _layoutSetPrototypeUuid;
 	private final transient LockManager _lockManager;

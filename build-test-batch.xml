@@ -280,6 +280,25 @@ mariadb.executable=${mariadb.executable}]]></echo>
 		</sequential>
 	</macrodef>
 
+	<macrodef name="get-test-batch-app-server-start-executable-arg-line">
+		<sequential>
+			<propertycopy from="app.server.${app.server.type}.start.executable.arg.line" name="start.executable.arg.line" />
+
+			<if>
+				<and>
+					<equals arg1="${app.server.type}" arg2="tomcat" />
+					<equals arg1="${test.batch.code.coverage}" arg2="true" />
+				</and>
+				<then>
+					<property name="test.batch.app.server.start.executable.arg.line" value="jacoco ${start.executable.arg.line}" />
+				</then>
+				<else>
+					<property name="test.batch.app.server.start.executable.arg.line" value="${start.executable.arg.line}" />
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+
 	<macrodef name="merge-test-results">
 		<sequential>
 			<antcall target="merge-test-results" />
@@ -308,6 +327,36 @@ mariadb.executable=${mariadb.executable}]]></echo>
 					<copy file="test-results/TESTS-TestSuites.xml" tofile="${env.WORKSPACE}/test-results/TESTS-TestSuites.xml" />
 				</then>
 			</if>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="prepare-liferay-classes" >
+		<attribute name="merged.jar" />
+		<attribute name="portal.bundle.dir" />
+
+		<sequential>
+			<var name="merged-classes" value="${project.dir}/jacoco/merged-classes" />
+
+			<delete dir="${merged-classes}" />
+			<mkdir dir="${merged-classes}" />
+
+			<unzip dest="${merged-classes}">
+				<patternset>
+					<include name="**/com/liferay/**" />
+				</patternset>
+				<fileset dir="@{portal.bundle.dir}">
+					 <include name="**/*.jar" />
+					 <include name="**/*.war" />
+				</fileset>
+			</unzip>
+
+			<jar destfile="@{merged.jar}" update="true">
+				<fileset dir="${merged-classes}">
+					<include name="**/*.class" />
+				</fileset>
+			</jar>
+
+			<delete dir="${merged-classes}" />
 		</sequential>
 	</macrodef>
 
@@ -379,6 +428,8 @@ app.server.type=@{app.server.type}]]></echo>
 				<equals arg1="@{app.server.type}" arg2="tomcat" />
 				<then>
 					<setup-testable-tomcat />
+
+					<setup-test-batch-testable-tomcat />
 				</then>
 			</if>
 
@@ -392,13 +443,14 @@ app.server.type=@{app.server.type}]]></echo>
 /release.*.properties
 /sql/sql.*.properties
 /test.*.properties
-/tools/cobertura-agent/classes
 /tools/maven/*.asc
 /tools/node*
 /tools/selenium/*.exe
 /tools/selenium/extensions/ide.*.js
 /tools/tck
 /tools/zip_tmpl/license</echo>
+
+			<delete file="${project.dir}/lib/.gitignore" />
 
 			<echo file="${project.dir}/modules/.gitignore">tmp
 /*/*/ivy.xml.MD5
@@ -432,6 +484,8 @@ app.server.type=@{app.server.type}]]></echo>
 							git diff --cached --name-only -z | grep -E -v -z '^\.gitignore|bundles/|^modules/\.gitignore' | xargs -0 -n 1000 zip -v liferay-portal-source.zip
 						]]>
 					</execute>
+
+					<prepare-liferay-classes if:true="${test.batch.code.coverage}" merged.jar="${project.dir}/jacoco/merged.jar" portal.bundle.dir="bundles" />
 				</then>
 			</if>
 
@@ -593,6 +647,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<attribute default="${app.server.@{app.server.type}.version}" name="app.server.version" />
 		<attribute name="database.type" />
 		<attribute default="${database.@{database.type}.version}" name="database.version" />
+		<attribute default="true" name="setup.proxy" />
 		<attribute default="true" name="setup.testable.tomcat" />
 		<attribute default="" name="test.build.fix.pack.zip.url" />
 		<attribute default="" name="test.fix.pack.base.url" />
@@ -635,7 +690,10 @@ app.server.type=@{app.server.type}]]></echo>
 
 							<trycatch>
 								<try>
+									<get-test-batch-app-server-start-executable-arg-line />
+
 									<ant antfile="build-test-${app.server.type}.xml" inheritAll="false" target="run-selenium-${app.server.type}">
+										<property name="app.server.start.executable.arg.line" value="${test.batch.app.server.start.executable.arg.line}" />
 										<property name="database.type" value="@{database.type}" />
 										<property name="liferay.portal.bundle" value="@{test.portal.bundle.version}" />
 										<property name="test.build.plugins.war.zip.url" value="@{test.plugins.war.zip.url}" />
@@ -748,6 +806,8 @@ app.server.type=@{app.server.type}]]></echo>
 								</and>
 								<then>
 									<setup-testable-tomcat />
+
+									<setup-test-batch-testable-tomcat setup.proxy="@{setup.proxy}" />
 								</then>
 							</if>
 						</then>
@@ -783,6 +843,8 @@ app.server.type=@{app.server.type}]]></echo>
 								</and>
 								<then>
 									<setup-testable-tomcat />
+
+									<setup-test-batch-testable-tomcat setup.proxy="@{setup.proxy}" />
 								</then>
 							</if>
 						</else>
@@ -830,6 +892,7 @@ app.server.type=@{app.server.type}]]></echo>
 
 							<ant dir="portal-impl" inheritAll="false" target="test-class-group">
 								<property name="database.type" value="@{database.type}" />
+								<property name="junit.code.coverage" value="${test.batch.code.coverage}" />
 								<property name="test.class.group.index" value="${axis.variable}" />
 								<property name="test.type" value="integration" />
 							</ant>
@@ -877,6 +940,57 @@ app.server.type=@{app.server.type}]]></echo>
 				test.portal.bundle.zip.url="${test.portal.bundle.zip.url}"
 				test.sql.zip.url="${test.sql.zip.url}"
 			/>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="run-lpkg-controller-test">
+		<sequential>
+			<run-batch-test tomcat.gc.log="true">
+				<test-action>
+					<database-test-run-test database.type="mysql" stop.app.server="true">
+						<test-action>
+							<setup-lpkg-test database.type="@{database.type}" />
+
+							<gradle-execute dir="modules/apps/static/portal-lpkg-deployer/portal-lpkg-deployer-test" task="test">
+								<arg value="test" />
+								<arg value="--tests" />
+								<arg value="*.LPKGControllerTest" />
+								<arg value="-Dliferay.home=${liferay.home}" />
+							</gradle-execute>
+
+							<trycatch>
+								<try>
+									<antcall inheritall="false" target="start-app-server" />
+
+									<gradle-execute dir="modules/apps/static/portal-lpkg-deployer/portal-lpkg-deployer-test" task="testIntegration">
+										<arg value="testIntegration" />
+										<arg value="--tests" />
+										<arg value="*.LPKGControllerVerifyTest" />
+									</gradle-execute>
+								</try>
+
+								<finally>
+									<ant dir="portal-kernel" inheritAll="false" target="test-class">
+										<property name="test.class" value="PortalLogAssertorTest" />
+									</ant>
+								</finally>
+							</trycatch>
+						</test-action>
+					</database-test-run-test>
+				</test-action>
+
+				<test-set-up>
+					<if>
+						<isset property="env.DIST_PATH" />
+						<then>
+							<prepare-test-environment />
+						</then>
+						<else>
+							<prepare-test-build />
+						</else>
+					</if>
+				</test-set-up>
+			</run-batch-test>
 		</sequential>
 	</macrodef>
 
@@ -943,6 +1057,7 @@ app.server.type=@{app.server.type}]]></echo>
 										<arg value="*.LPKGOverrideVerifyCleanStartupTest" />
 									</gradle-execute>
 								</try>
+
 								<finally>
 									<ant dir="portal-kernel" inheritAll="false" target="test-class">
 										<property name="test.class" value="PortalLogAssertorTest" />
@@ -1303,7 +1418,10 @@ app.server.type=@{app.server.type}]]></echo>
 
 							<print-test-class-group test.class.group.index="${axis.variable}" />
 
+							<get-test-batch-app-server-start-executable-arg-line />
+
 							<gradle-execute dir="modules" task="testIntegration">
+								<arg value="-Dapp.server.start.executable.arg.line=${test.batch.app.server.start.executable.arg.line}" />
 								<arg value="-Ddatabase.type=@{database.type}" />
 								<arg value="-Dbuild.exclude.ant.plugin=true" />
 								<arg value="-Dtest.class.group.index=${axis.variable}" />
@@ -1380,6 +1498,162 @@ app.server.type=@{app.server.type}]]></echo>
 				<property name="app.server.parent.dir" value="${project.dir}/bundles" />
 				<property name="osgi.dir" value="${app.server.parent.dir}/osgi" />
 			</ant>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="setup-test-batch-testable-tomcat">
+		<attribute default="true" name="setup.proxy" />
+
+		<sequential>
+			<if>
+				<equals arg1="@{setup.proxy}" arg2="true" />
+				<then>
+					<setup-testable-tomcat-dummy-socket-proxy />
+				</then>
+			</if>
+
+			<setup-testable-tomcat-gc />
+
+			<setup-testable-tomcat-heap-dump-on-oom />
+
+			<setup-testable-tomcat-print-final-flags />
+		</sequential>
+	</macrodef>
+
+	<macrodef name="setup-testable-tomcat-dummy-socket-proxy">
+		<sequential>
+			<local name="dummy.socket.proxy" />
+
+			<property name="dummy.socket.proxy" value="-DsocksProxyHost=127.0.0.1 -DsocksProxyPort=8888" />
+
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.bat" substring="${dummy.socket.proxy}" />
+				</not>
+				<then>
+					<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.bat">
+						<![CDATA[
+							set "CATALINA_OPTS=%CATALINA_OPTS% ${dummy.socket.proxy}"
+						]]>
+					</echo>
+				</then>
+			</if>
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.sh" substring="${dummy.socket.proxy}" />
+				</not>
+				<then>
+					<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.sh">
+						<![CDATA[
+							CATALINA_OPTS="${CATALINA_OPTS} ${dummy.socket.proxy}"
+						]]>
+					</echo>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="setup-testable-tomcat-gc">
+		<sequential>
+			<if>
+				<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.bat" substring="${test.batch.app.server.tomcat.setenv.gc.old}" />
+				<then>
+					<replace file="${app.server.tomcat.dir}/bin/setenv.bat" token="${test.batch.app.server.tomcat.setenv.gc.old}" value="${test.batch.app.server.tomcat.setenv.gc.new}" />
+				</then>
+				<else>
+					<if>
+						<not>
+							<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.bat" substring="${test.batch.app.server.tomcat.setenv.gc.new}" />
+						</not>
+						<then>
+							<fail message="Unable to setup Tomcat GC properties for ${app.server.tomcat.dir}/bin/setenv.bat." />
+						</then>
+					</if>
+				</else>
+			</if>
+
+			<if>
+				<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.sh" substring="${test.batch.app.server.tomcat.setenv.gc.old}" />
+				<then>
+					<replace file="${app.server.tomcat.dir}/bin/setenv.sh" token="${test.batch.app.server.tomcat.setenv.gc.old}" value="${test.batch.app.server.tomcat.setenv.gc.new}" />
+				</then>
+				<else>
+					<if>
+						<not>
+							<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.sh" substring="${test.batch.app.server.tomcat.setenv.gc.new}" />
+						</not>
+						<then>
+							<fail message="Unable to setup Tomcat GC properties for ${app.server.tomcat.dir}/bin/setenv.sh." />
+						</then>
+					</if>
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="setup-testable-tomcat-heap-dump-on-oom">
+		<sequential>
+			<local name="heap.dump.on.oom" />
+
+			<property name="heap.dump.on.oom" value="-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${test.batch.app.server.tomcat.setenv.heap.dump.path}" />
+
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.bat" substring="${heap.dump.on.oom}" />
+				</not>
+				<then>
+					<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.bat">
+						<![CDATA[
+							set "CATALINA_OPTS=%CATALINA_OPTS% ${heap.dump.on.oom}"
+						]]>
+					</echo>
+				</then>
+			</if>
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.sh" substring="${heap.dump.on.oom}" />
+				</not>
+				<then>
+					<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.sh">
+						<![CDATA[
+							CATALINA_OPTS="${CATALINA_OPTS} ${heap.dump.on.oom}"
+						]]>
+					</echo>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="setup-testable-tomcat-print-final-flags">
+		<sequential>
+			<local name="print.final.flags" />
+
+			<property name="print.final.flags" value="-XX:+PrintFlagsFinal" />
+
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.bat" substring="${print.final.flags}" />
+				</not>
+				<then>
+					<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.bat">
+						<![CDATA[
+							set "CATALINA_OPTS=%CATALINA_OPTS% ${print.final.flags}"
+						]]>
+					</echo>
+				</then>
+			</if>
+			<if>
+				<not>
+					<resourcecontains resource="${app.server.tomcat.dir}/bin/setenv.sh" substring="${print.final.flags}" />
+				</not>
+				<then>
+					<echo append="true" file="${app.server.tomcat.dir}/bin/setenv.sh">
+						<![CDATA[
+							CATALINA_OPTS="${CATALINA_OPTS} ${print.final.flags}"
+						]]>
+					</echo>
+				</then>
+			</if>
 		</sequential>
 	</macrodef>
 
@@ -1497,9 +1771,7 @@ app.server.type=@{app.server.type}]]></echo>
 			<test-action>
 				<ant dir="portal-web" target="compile-tomcat" />
 
-				<gradle-execute dir="modules" task="compileJSP">
-					<arg value="-Dbuild.exclude.ant.plugin=true" />
-				</gradle-execute>
+				<gradle-execute dir="modules" task="compileJSP" />
 			</test-action>
 
 			<test-set-up>
@@ -1574,6 +1846,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="mariadb"
+			setup.proxy="false"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -1592,6 +1865,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="mysql"
+			setup.proxy="false"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -1610,6 +1884,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="mysql"
+			setup.proxy="false"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -1628,6 +1903,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="oracle"
+			setup.proxy="false"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -1646,6 +1922,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="postgresql"
+			setup.proxy="false"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -1664,6 +1941,7 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-functional-test
 			app.server.type="tomcat"
 			database.type="sybase"
+			setup.proxy="false"
 			test.build.fix.pack.zip.url="${test.build.fix.pack.zip.url}"
 			test.fix.pack.base.url="${test.fix.pack.base.url}"
 			test.license.xml.url="${test.license.xml.url}"
@@ -1904,6 +2182,10 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-integration-test database.type="hypersonic" />
 	</target>
 
+	<target name="integration-mariadb100-jdk8">
+		<run-integration-test database.type="mariadb" />
+	</target>
+
 	<target name="integration-mysql56-jdk8">
 		<run-integration-test database.type="mysql" />
 	</target>
@@ -1954,6 +2236,10 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-legacy-database-dump database.type="sybase" />
 	</target>
 
+	<target name="lpkg-controller-jdk8">
+		<run-lpkg-controller-test />
+	</target>
+
 	<target name="lpkg-override-jdk8">
 		<run-lpkg-override-test />
 	</target>
@@ -1973,11 +2259,36 @@ app.server.type=@{app.server.type}]]></echo>
 	<target name="modules-compile-jdk8">
 		<run-batch-test>
 			<test-action>
-				<gradle-execute dir="modules" task="assemble">
-					<arg value="--continue" />
-					<arg value="--parallel" />
+				<gradle-execute dir="modules" outputproperty="modules.compile.project.paths" task="printProjectPath">
+					<arg value="--quiet" />
 					<arg value="-Dbuild.exclude.dirs=private/apps/osb-lcs,private/apps/saml,third-party" />
 				</gradle-execute>
+
+				<propertyregex
+					input="${modules.compile.project.paths}"
+					property="modules.compile.task.groups"
+					regexp="(\S+)\r?\n"
+					replace="\1:assemble "
+				/>
+
+				<propertyregex
+					input="${modules.compile.task.groups}:assemble"
+					override="true"
+					property="modules.compile.task.groups"
+					regexp="(\S+ ){${test.module.groups.size}}"
+					replace="\0,"
+				/>
+
+				<for list="${modules.compile.task.groups}" param="modules.compile.task.group" trim="true">
+					<sequential>
+						<echo>Executing Gradle tasks: @{modules.compile.task.group}.</echo>
+
+						<gradle-execute dir="modules" task="@{modules.compile.task.group}">
+							<arg value="--continue" />
+							<arg value="--parallel" />
+						</gradle-execute>
+					</sequential>
+				</for>
 			</test-action>
 
 			<test-set-up>
@@ -2026,6 +2337,10 @@ app.server.type=@{app.server.type}]]></echo>
 		<run-modules-integration-test database.type="hypersonic" />
 	</target>
 
+	<target name="modules-integration-mariadb100-jdk8">
+		<run-modules-integration-test database.type="mariadb" />
+	</target>
+
 	<target name="modules-integration-mysql56-jdk8">
 		<run-modules-integration-test database.type="mysql" />
 	</target>
@@ -2047,6 +2362,7 @@ app.server.type=@{app.server.type}]]></echo>
 			<test-action>
 				<gradle-execute dir="modules" task="test">
 					<arg value="-Dbuild.exclude.ant.plugin=true" />
+					<arg value="-Djunit.code.coverage=${test.batch.code.coverage}" />
 					<arg value="-Dtest.class.group.index=${axis.variable}" />
 				</gradle-execute>
 			</test-action>
@@ -2571,26 +2887,29 @@ information. Make sure to commit in all build services results.
 		</run-batch-test>
 	</target>
 
+	<target name="setup-testable-tomcat-gc">
+		<setup-testable-tomcat-gc />
+	</target>
+
+	<target name="slim-profile-jdk8">
+		<run-batch-test>
+			<test-action>
+				<ant dir="." target="all" >
+					<property name="build.profile" value="slim" />
+				</ant>
+			</test-action>
+		</run-batch-test>
+	</target>
+
 	<target name="source-format-jdk8">
 		<run-batch-test>
 			<test-action>
 				<if>
-					<contains string="${liferay.releng.branch}" substring="master" />
+					<istrue value="${liferay.releng.public}" />
 					<then>
 						<gradle-execute dir="modules/util/source-formatter" task="deploy">
 							<arg value="clean" />
 						</gradle-execute>
-					</then>
-				</if>
-
-				<local name="source.formatter.excludes" />
-
-				<if>
-					<not>
-						<resourcecontains resource="${project.dir}/portal-kernel/src/com/liferay/portal/kernel/util/ReleaseInfo.java" substring=" DXP " />
-					</not>
-					<then>
-						<property name="source.formatter.excludes" value="modules/private/**" />
 					</then>
 				</if>
 
@@ -2604,7 +2923,7 @@ information. Make sure to commit in all build services results.
 					<property name="show.documentation" value="false" />
 					<property name="source.auto.fix" value="false" />
 					<property name="source.fail.on.error" value="true" />
-					<property name="source.formatter.excludes" value="${source.formatter.excludes}" />
+					<property if:true="${liferay.releng.public}" name="source.formatter.excludes" value="modules/private/**" />
 					<property name="source.print.errors" value="true" />
 					<property name="source.throw.exception" value="true" />
 					<property name="source.use.properties" value="false" />
@@ -2938,15 +3257,18 @@ ${output.content}</echo>
 		<run-batch-test>
 			<test-action>
 				<ant dir="portal-kernel" inheritAll="false" target="test-class-group">
+					<property name="junit.code.coverage" value="${test.batch.code.coverage}" />
 					<property name="test.class.group.index" value="${axis.variable}" />
 				</ant>
 
 				<ant dir="portal-impl" inheritAll="false" target="test-class-group">
+					<property name="junit.code.coverage" value="${test.batch.code.coverage}" />
 					<property name="test.class.group.index" value="${axis.variable}" />
 					<property name="test.type" value="unit" />
 				</ant>
 
 				<ant dir="util-java" inheritAll="false" target="test-class-group">
+					<property name="junit.code.coverage" value="${test.batch.code.coverage}" />
 					<property name="test.class.group.index" value="${axis.variable}" />
 				</ant>
 			</test-action>

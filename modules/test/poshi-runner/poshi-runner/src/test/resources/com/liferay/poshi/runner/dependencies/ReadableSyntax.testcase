@@ -4,6 +4,8 @@ definition {
 	property portal.upstream = "true";
 	property testray.main.component.name = "Smoke";
 
+	var userScreenName = "joeblogs";
+
 	setUp {
 		TestCase.setUpPortalInstance();
 
@@ -26,6 +28,13 @@ definition {
 			portlet = "Users and Organizations"
 		);
 
+		for (breadcrumbName : "${breadcrumbListVisible}") {
+			var key_breadcrumbName = "${breadcrumbName}";
+			var breadcrumbNameUppercase = "StringUtil.upperCase('${breadcrumbName}')";
+
+			AssertTextEquals(locator1 = "Breadcrumb#BREADCRUMB_ENTRY", value1 = "${breadcrumbNameUppercase}");
+		}
+
 		User.addCP(
 			userEmailAddress = "${userEmailAddress}",
 			userFirstName = "${userFirstName}",
@@ -41,6 +50,35 @@ definition {
 		property portal.smoke = "true";
 		property test.assert.warning.exceptions = "true";
 
+		if (isset(duplicate)) {
+			Alert.viewErrorMessage(
+				errorMessage = "A configuration with this ID already exists. Please enter a unique ID."
+			);
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+
+		if ("${check}" == "true") {
+			Alert.viewSuccessMessage();
+		}
+
+		if (IsElementPresent(locator1 = "Blogs#ADD_BLOGS_ENTRY")) {
+			Alert.viewSuccessMessage();
+		}
+
+		var siteName = return(
+			TestCase.getSiteName(
+				siteName = "${siteName}"
+			),
+			siteName
+		);
+		var wikiPageContent = "<p id='demo'>PASS</p>
+
+<script type='text/javascript'>
+document.getElementById('demo').innerHTML = 'FAIL';
+</script>";
+
 		Smoke.viewWelcomePage();
 
 		Smoke.runSmoke();
@@ -48,6 +86,8 @@ definition {
 		AssertElementPresent(locator1 = "Home#PAGE", value1 = "Welcome");
 
 		Click(locator1 = "Home#PAGE");
+
+		Refresh();
 
 		Type(value1 = "Welcome");
 

@@ -226,7 +226,7 @@ while (manageableCalendarsIterator.hasNext()) {
 			);
 
 			var destroyInstance = function(event) {
-				if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
+				if (event.portletId === '<%= portletDisplay.getId() %>') {
 					calendarContainer.destroy();
 
 					Liferay.component('<portlet:namespace />calendarContainer', null);
@@ -251,7 +251,7 @@ while (manageableCalendarsIterator.hasNext()) {
 			);
 
 			var destroyInstance = function(event) {
-				if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
+				if (event.portletId === '<%= portletDisplay.getId() %>') {
 					remoteServices.destroy();
 
 					Liferay.component('<portlet:namespace />remoteServices', null);
@@ -491,7 +491,7 @@ while (manageableCalendarsIterator.hasNext()) {
 
 <aui:script>
 	function <portlet:namespace />filterCalendarBookings(calendarBooking) {
-		return '<%= calendarBookingId %>' !== calendarBooking.calendarBookingId;
+		return calendarBooking.calendarBookingId !== '<%= calendarBookingId %>';
 	}
 
 	function <portlet:namespace />resolver(data) {
@@ -659,9 +659,13 @@ while (manageableCalendarsIterator.hasNext()) {
 		{
 			after: {
 				calendarRemoved: function(event) {
-					var calendarId = event.calendar.get('calendarId');
+					var calendar = event.calendar;
 
-					window.<portlet:namespace />reinvitableCalendarIds.push(calendarId);
+					if (calendar) {
+						var calendarId = calendar.get('calendarId');
+
+						window.<portlet:namespace />reinvitableCalendarIds.push(calendarId);
+					}
 				},
 				calendarsChange: function(event) {
 					var instance = this;
@@ -714,7 +718,7 @@ while (manageableCalendarsIterator.hasNext()) {
 
 	new Liferay.DatePickerSanitizer(
 		{
-			datePickers : [
+			datePickers: [
 				Liferay.component('<portlet:namespace />endTimeDatePicker'),
 				Liferay.component('<portlet:namespace />endTimeDatePicker')
 			],

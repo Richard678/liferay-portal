@@ -214,6 +214,26 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 		}
 	}
 
+	public static boolean getProperty(
+		Object object, String name, boolean defaultValue) {
+
+		Object value = getProperty(object, name);
+
+		if (value == null) {
+			return defaultValue;
+		}
+
+		if (value instanceof Boolean) {
+			return (Boolean)value;
+		}
+
+		if (value instanceof String) {
+			return Boolean.parseBoolean((String)value);
+		}
+
+		return defaultValue;
+	}
+
 	public static String getProperty(
 		Object object, String name, String defaultValue) {
 
@@ -271,7 +291,9 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 
 		List<String> taskNames = startParameter.getTaskNames();
 
-		if (taskNames.contains(taskName)) {
+		if (taskNames.contains(taskName) ||
+			taskNames.contains(project.getPath() + ":" + taskName)) {
+
 			return true;
 		}
 

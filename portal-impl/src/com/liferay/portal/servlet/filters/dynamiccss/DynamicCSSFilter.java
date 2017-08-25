@@ -17,15 +17,15 @@ package com.liferay.portal.servlet.filters.dynamiccss;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
-import com.liferay.portal.kernel.servlet.DynamicResourceIncludeUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
-import com.liferay.portal.kernel.servlet.PortletResourcesUtil;
+import com.liferay.portal.kernel.servlet.ResourceUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringPool;
@@ -84,62 +84,31 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 			FilterChain filterChain)
 		throws Exception {
 
-		ServletContext servletContext = _servletContext;
-
 		String requestPath = getRequestPath(request);
-
-		if (requestPath.endsWith(_CSS_EXTENSION) &&
-			PortalUtil.isRightToLeft(request)) {
-
-			int pos = requestPath.lastIndexOf(StringPool.PERIOD);
-
-			requestPath =
-				requestPath.substring(0, pos) + "_rtl" +
-					requestPath.substring(pos);
-		}
-
-		URL resourceURL = _servletContext.getResource(requestPath);
 
 		String originalRequestPath = request.getRequestURI();
 
-		if (resourceURL == null) {
-			ServletContext resourceServletContext =
-				PortalWebResourcesUtil.getPathServletContext(
-					originalRequestPath);
+		if (originalRequestPath.endsWith(_CSS_EXTENSION) &&
+			PortalUtil.isRightToLeft(request)) {
 
-			if (resourceServletContext != null) {
-				resourceURL = PortalWebResourcesUtil.getResource(
-					resourceServletContext, originalRequestPath);
-			}
+			int pos = originalRequestPath.lastIndexOf(StringPool.PERIOD);
 
-			if (resourceURL == null) {
-				resourceServletContext =
-					PortletResourcesUtil.getPathServletContext(
-						originalRequestPath);
-
-				if (resourceServletContext != null) {
-					resourceURL = PortletResourcesUtil.getResource(
-						resourceServletContext, originalRequestPath);
-				}
-			}
-
-			if (resourceURL == null) {
-				resourceServletContext =
-					DynamicResourceIncludeUtil.getPathServletContext(
-						originalRequestPath);
-
-				if (resourceServletContext != null) {
-					resourceURL = DynamicResourceIncludeUtil.getResource(
-						resourceServletContext, originalRequestPath);
-				}
-			}
-
-			if (resourceURL == null) {
-				return null;
-			}
-
-			servletContext = resourceServletContext;
+			originalRequestPath =
+				originalRequestPath.substring(0, pos) + "_rtl" +
+					originalRequestPath.substring(pos);
 		}
+
+		ObjectValuePair<ServletContext, URL> objectValuePair =
+			ResourceUtil.getObjectValuePair(
+				originalRequestPath, requestPath, _servletContext);
+
+		if (objectValuePair == null) {
+			return null;
+		}
+
+		ServletContext servletContext = objectValuePair.getKey();
+
+		URL resourceURL = objectValuePair.getValue();
 
 		String cacheCommonFileName = getCacheFileName(request);
 

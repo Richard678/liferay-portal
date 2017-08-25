@@ -83,9 +83,19 @@
 	<command name="AddListWithXSSWorkflowDefinition" priority="4">
 		<description message="This is a use case for LPS-50557." />
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Workflow Definition" />
-		</execute>
+		<toggle name="LPS-73924">
+			<on>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow" />
+				</execute>
+			</on>
+
+			<off>
+				<execute macro="ProductMenu#gotoControlPanelConfiguration">
+					<var name="portlet" value="Workflow Definition" />
+				</execute>
+			</off>
+		</toggle>
 
 		<execute macro="Workflow#uploadDefinition">
 			<var name="workflowDefinitionFile" value="workflow_definition_xss.xml" />
@@ -1336,7 +1346,9 @@
 		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="Data Definition Title" />
 		<execute function="Click" locator1="Icon#BASIC_SEARCH" />
 		<execute function="Click#waitForMenuToggleJSClick" locator1="DDMSelectStructure#DDM_STRUCTURE_ELLIPSIS_1" />
-		<execute function="AssertClick" locator1="MenuItem#MANAGE_TEMPLATES" value1="Manage Templates" />
+		<execute function="AssertClick" locator1="MenuItem#ANY_MENU_ITEM" value1="Manage Templates">
+			<var name="key_menuItem" value="Manage Templates" />
+		</execute>
 
 		<execute function="Click" locator1="Icon#ANGLE_LEFT_BACK" />
 
@@ -3553,8 +3565,11 @@
 		</execute>
 	</command>
 
-	<command name="ViewRequiredNestedDocumentsAndMediaField" priority="3">
+	<command name="ViewRequiredNestedDocumentsAndMediaField" priority="5">
 		<description message="This is a use case for LPS-60155." />
+
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Training" />
 
 		<execute macro="Navigator#openURL" />
 

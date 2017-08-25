@@ -202,7 +202,9 @@
 			<var name="pageName" value="Web Content Display Page" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoEditPGViaWCD" />
+		<execute macro="WebContentNavigator#gotoEditPGViaWCD">
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
 
 		<execute macro="WebContent#selectCategory">
 			<var name="categoryName" value="Category Name" />
@@ -302,7 +304,9 @@
 			<var name="pageName" value="Web Content Display Page" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoEditPGViaWCD" />
+		<execute macro="WebContentNavigator#gotoEditPGViaWCD">
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
 
 		<execute macro="WebContent#selectCategory">
 			<var name="categoryName" value="Category Name" />
@@ -525,8 +529,9 @@
 		</execute>
 	</command>
 
-	<command name="SearchWebContentTag" priority="4">
-		<property name="testray.component.names" value="Tags,Web Content Search" />
+	<command name="SearchWebContentTag" priority="5">
+		<property name="portal.acceptance" value="pending" />
+		<property name="testray.component.names" value="Tags,Training,Web Content Display" />
 
 		<execute macro="Page#add">
 			<var name="pageName" value="Web Content Display Page" />
@@ -553,7 +558,9 @@
 			<var name="pageName" value="Web Content Display Page" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoEditPGViaWCD" />
+		<execute macro="WebContentNavigator#gotoEditPGViaWCD">
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
 
 		<execute macro="WebContent#addTagPGViaWCD">
 			<var name="tagName" value="tag name" />
@@ -635,7 +642,9 @@
 			<var name="pageName" value="Web Content Display Page" />
 		</execute>
 
-		<execute macro="WebContentNavigator#gotoEditPGViaWCD" />
+		<execute macro="WebContentNavigator#gotoEditPGViaWCD">
+			<var name="webContentTitle" value="WC WebContent Title" />
+		</execute>
 
 		<execute macro="WebContent#addTagPGViaWCD">
 			<var name="tagName" value="tag name" />
